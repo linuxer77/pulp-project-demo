@@ -24,12 +24,10 @@ jobs:
       - name: Install Pulp CLI
         run: pip install pulp-cli pulp-cli-deb
 
+      - name: Configure Pulp CLI
+        run: pulp config create --base-url ${{ secrets.PULP_BASE_URL }} --username ${{ secrets.PULP_USERNAME }} --password ${{ secrets.PULP_PASSWORD }}
+
       - name: Upload and Publish to Pulp
-        env:
-          # Pulp CLI automatically reads these environment variables!
-          PULP_BASE_URL: ${{ secrets.PULP_BASE_URL }}
-          PULP_USERNAME: ${{ secrets.PULP_USERNAME }}
-          PULP_PASSWORD: ${{ secrets.PULP_PASSWORD }}
         run: |
           echo "Uploading package to Pulp..."
           pulp deb content upload --repository asama-debian --file hello-asama_1.0.0_amd64.deb
