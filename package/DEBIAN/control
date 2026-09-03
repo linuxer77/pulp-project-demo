@@ -1,0 +1,8 @@
+Package: hello-asama
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Asama <dev@asama.ai>
+Description: Hello Asama demonstration package
+ A simple Debian package used to demonstrate the Asama Pulp repository.
