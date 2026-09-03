@@ -1,0 +1,40 @@
+name: Publish Debian Package to Pulp
+
+# We use workflow_dispatch so you can manually click a "Run" button during your demo!
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  publish-to-pulp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # In a real workflow, you would build your .deb package here.
+      # For this demo, we assume the .deb is already in the repo or built in a previous step.
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Pulp CLI
+        run: pip install pulp-cli pulp-cli-deb
+
+      - name: Upload and Publish to Pulp
+        env:
+          # Pulp CLI automatically reads these environment variables!
+          PULP_BASE_URL: ${{ secrets.PULP_BASE_URL }}
+          PULP_USERNAME: ${{ secrets.PULP_USERNAME }}
+          PULP_PASSWORD: ${{ secrets.PULP_PASSWORD }}
+        run: |
+          echo "Uploading package to Pulp..."
+          pulp deb content upload --repository asama-debian --file hello-asama_1.0.0_amd64.deb
+
+          echo "Generating new signed publication..."
+          pulp deb publication create --repository asama-debian --signing-service asama-deb-signer
+
+          echo "Successfully published! APT clients will receive this update on their next 'apt update'."
