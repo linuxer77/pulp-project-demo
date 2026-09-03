@@ -30,7 +30,7 @@ jobs:
       - name: Upload and Publish to Pulp
         run: |
           echo "Uploading package to Pulp..."
-          pulp deb content upload --repository asama-debian --file hello-asama_1.0.0_amd64.deb
+          pulp deb content upload --repository asama-debian --file hello-asama_1.0.1_amd64.deb
 
           echo "Generating new signed publication..."
           pulp deb publication create --repository asama-debian --signing-service asama-deb-signer
