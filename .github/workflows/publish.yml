@@ -32,11 +32,8 @@ jobs:
 
       - name: Build the .deb package
         run: |
-          # Ensure the script is executable
-          chmod +x package/usr/bin/asama
-          
-          # Build the package with the dynamic version name
-          dpkg-deb --build package hello-asama_${{ env.VERSION }}_amd64.deb
+          chmod +x scripts/build-deb.sh
+          ./scripts/build-deb.sh
 
       - name: Set up Python
         uses: actions/setup-python@v5
