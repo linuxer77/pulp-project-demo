@@ -1,2 +1,2 @@
-
+./scripts/build-deb.sh
 *.deb
