@@ -1,24 +1,15 @@
 #!/bin/bash
+
 set -e
 
-PACKAGE_NAME=$(grep -i '^Package:' package/DEBIAN/control | awk '{print $2}')
-VERSION=$(grep -i '^Version:' package/DEBIAN/control | awk '{print $2}')
-ARCH=$(grep -i '^Architecture:' package/DEBIAN/control | awk '{print $2}')
-
-if [ -z "$VERSION" ]; then
-    echo "Error: Could not extract Version from package/DEBIAN/control"
-    exit 1
-fi
+PACKAGE_NAME="hello-asama"
+VERSION="1.0.3"
+ARCH="amd64"
 
 OUTPUT="${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
 
-echo "Building $PACKAGE_NAME version $VERSION for $ARCH..."
-
 rm -f "$OUTPUT"
 
-chmod +x package/usr/bin/* 2>/dev/null || true
-
-# Build the Debian package
 dpkg-deb --build package "$OUTPUT"
 
-echo "Successfully built: $OUTPUT"
+echo "Built: $OUTPUT"
