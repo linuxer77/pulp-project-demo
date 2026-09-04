@@ -1,20 +1,42 @@
-name: Publish Debian Package to Pulp
+name: Build and Publish Debian Package
 
-# We use workflow_dispatch so you can manually click a "Run" button during your demo!
 on:
   push:
-    branches: ["main"]
-  workflow_dispatch:
+    tags:
+      - 'v*.*.*' # Triggers ONLY when you push a tag like v1.0.3
+  workflow_dispatch: # Keeps the manual button for testing
 
 jobs:
-  publish-to-pulp:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # In a real workflow, you would build your .deb package here.
-      # For this demo, we assume the .deb is already in the repo or built in a previous step.
+      - name: Extract version from tag
+        id: get_version
+        # If tag is v1.0.3, this extracts just '1.0.3' and saves it to an environment variable
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+          else
+            echo "VERSION=1.0.2" >> $GITHUB_ENV # Fallback for manual workflow_dispatch runs
+          fi
+
+      - name: Inject Version into DEBIAN/control
+        run: |
+          # Dynamically overwrite the Version field in the control file
+          sed -i "s/^Version:.*/Version: ${{ env.VERSION }}/" package/DEBIAN/control
+          echo "Updated control file:"
+          cat package/DEBIAN/control
+
+      - name: Build the .deb package
+        run: |
+          # Ensure the script is executable
+          chmod +x package/usr/bin/asama
+          
+          # Build the package with the dynamic version name
+          dpkg-deb --build package hello-asama_${{ env.VERSION }}_amd64.deb
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,8 +51,8 @@ jobs:
 
       - name: Upload and Publish to Pulp
         run: |
-          echo "Uploading package to Pulp..."
-          pulp deb content upload --repository asama-debian --file hello-asama_1.0.3_amd64.deb
+          echo "Uploading package version ${{ env.VERSION }} to Pulp..."
+          pulp deb content upload --repository asama-debian --file hello-asama_${{ env.VERSION }}_amd64.deb
 
           echo "Generating new signed publication..."
           pulp deb publication create --repository asama-debian --signing-service asama-deb-signer
